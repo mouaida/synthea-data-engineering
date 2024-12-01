@@ -168,4 +168,25 @@ combined_data %>%
 # Export to CSV to inspect data further
 write.csv(combined_data, "combined_data.csv", row.names = FALSE)
 
+# Date transformations for consistency
+combined_data <- combined_data %>%
+  mutate(
+    # Convert date columns to Date format
+    birthdate = as.Date(birthdate, format = "%d/%m/%Y"),
+    diagnosis_start = as.Date(diagnosis_start, format = "%d/%m/%Y"),
+    diagnosis_stop = as.Date(diagnosis_stop, format = "%d/%m/%Y"),
+    procedure_start = as.Date(procedure_start, format = "%d/%m/%Y"),
+    procedure_stop = as.Date(procedure_stop, format = "%d/%m/%Y"),
+    
+    # Convert datetime columns to POSIXct format
+    encounter_start = as.POSIXct(encounter_start, format = "%d/%m/%Y %H:%M"),
+    encounter_stop = as.POSIXct(encounter_stop, format = "%d/%m/%Y %H:%M"),
+    medication_start = as.POSIXct(medication_start, format = "%d/%m/%Y %H:%M"),
+    medication_stop = as.POSIXct(medication_stop, format = "%d/%m/%Y %H:%M"),
+    procedure_start = as.POSIXct(procedure_start, format = "%d/%m/%Y %H:%M"),
+    procedure_stop = as.POSIXct(procedure_stop, format = "%d/%m/%Y %H:%M")
+  )
+
+
+
 

@@ -16,8 +16,9 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 - Initialised R environment with required libraries.
 - Loaded six datasets from CSV files into RStudio.
 - Standardised each dataset to ensure consistent column naming and retained only relevant fields for analysis.
+- Standardised all date column formats for consistency. (`Date` for dates, `POSIXct` for datetimes).
 - Combined datasets into a unified `combined_data` dataset for further analysis.
-- Performed data quality checks and explored potential inconsistencies.
+- Initiated some data quality checks and exploring inconsistencies in the data.
 
 ### Transformed Datasets
 1. **patients_transformed**:
@@ -56,6 +57,11 @@ This project's objective is to clean and analyse synthetic healthcare data from 
      - `procedures_transformed`.
    - Lastly, used `hospital_id` to join `encounters_transformed` with `organizations_transformed`.
 
+- **Standardised Date Columns**:
+   - Converted all date columns (`birthdate`, `encounter_start`, `encounter_stop`, etc.) into consistent formats:
+     - Dates: `Date` format (`YYYY-MM-DD`).
+     - Datetimes: `POSIXct` format (`YYYY-MM-DD HH:MM:SS`).
+
 - **Checked Data Quality**:
    - Inspected for missing values, inconsistencies, and duplicates.
    - Validated relationships between patients, encounters, and other entities.
@@ -66,6 +72,6 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 - **`code/data_cleaning.R`**:
  - A script to:
      - Load and clean datasets.
-     - Standardise column names.
+     - Standardise column names and date formats.
      - Combine the datasets into a joined dataset for analysis.
    - **Status**: Completed initial cleaning and transformation.
