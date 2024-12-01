@@ -1,6 +1,8 @@
 library(readr)
 library(dplyr)
 library(tidyr)
+library(tidyverse)
+library(janitor)
 
 ## 1.	Load the dataset into your environment.
 
@@ -13,93 +15,157 @@ patients <- read_csv("patients.csv")
 procedures <- read_csv("procedures.csv")
 
 # Check datasets imported correctly by previewing the structure and first few rows
-glimpse(procedures)
+glimpse(encounters)
 head(procedures)
 
 ## Creating sample dataset with only the required columns from the 6 datasets
 
-# 1. Create a new transformed patients dataset
+# Create a new transformed patients dataset
 patients_transformed <- patients %>%
   rename(
-    PATIENT_ID = Id
+    patient_id = Id
   ) %>% 
   # Create `age` by calculating the difference between today’s date and the BIRTHDATE
   # The result is the difference in days that gets divided by 365 to get age in years
   mutate(AGE = as.integer((Sys.Date() - as.Date(BIRTHDATE)) / 365)) %>%
-  select(PATIENT_ID, BIRTHDATE, AGE, GENDER, CITY, ZIP, INCOME) # %>% View()
+  select(patient_id, BIRTHDATE, AGE, GENDER, CITY, ZIP, INCOME) %>% 
+  # clean_names() used to standardise column names for all datasets
+  clean_names() # %>% View()
   
 
-# 2. Create a new transformed conditions dataset with standardised column names
+# Create a new transformed conditions dataset with standardised column names
 conditions_transformed <- conditions %>% 
   # Rename and standardise column names
   rename( 
-    PATIENT_ID = PATIENT,           
-    ENCOUNTER_ID = ENCOUNTER,        
-    DIAGNOSIS_CODE = CODE,             
-    DIAGNOSIS_DESCRIPTION = DESCRIPTION,
-    DIAGNOSIS_START = START,
-    DIAGNOSIS_STOP = STOP
+    patient_id = PATIENT,           
+    encounter_id = ENCOUNTER,
+    diagnosis_code = CODE,             
+    diagnosis_description = DESCRIPTION,
+    diagnosis_start = START,
+    diagnosis_stop = STOP
   ) %>%
   # Select only the relevant columns with standardised column names
-  select(DIAGNOSIS_START, DIAGNOSIS_STOP, PATIENT_ID, ENCOUNTER_ID, DIAGNOSIS_CODE, DIAGNOSIS_DESCRIPTION) # %>% View()
+  select(diagnosis_start, diagnosis_stop, patient_id, encounter_id, diagnosis_code, diagnosis_description) %>%
+  clean_names()# %>% View()
 
-# 3. Create a new transformed medications dataset
+# Create a new transformed medications dataset
 medications_transformed <- medications %>%
   # Rename and standardise column names
   rename(
-    PATIENT_ID = PATIENT,
-    ENCOUNTER_ID = ENCOUNTER,
-    MEDICATION_CODE = CODE,
-    MEDICATION_NAME = DESCRIPTION,
-    MEDICATION_START = START,
-    MEDICATION_STOP = STOP
+    patient_id = PATIENT,
+    encounter_id = ENCOUNTER,
+    medication_code = CODE,
+    medication_name = DESCRIPTION,
+    medication_start = START,
+    medication_stop = STOP
   ) %>%
-  select(MEDICATION_START, MEDICATION_STOP, PATIENT_ID, ENCOUNTER_ID, MEDICATION_CODE, MEDICATION_NAME) # %>% View()
+  select(medication_start, medication_stop, patient_id, encounter_id, medication_code, medication_name) %>%
+  clean_names() # %>% View()
 
-# 4. Create a new transformed procedures dataset with standardised column names
+# Create a new transformed procedures dataset with standardised column names
 procedures_transformed <- procedures %>%
   rename(
-    PATIENT_ID = PATIENT,
-    ENCOUNTER_ID = ENCOUNTER,
-    PROCEDURE_CODE = CODE,
+    patient_id = PATIENT,
+    encounter_id = ENCOUNTER,
+    procedure_code = CODE,
     PROCEDURE_DESCRIPTION = DESCRIPTION,
-    PROCEDURE_START = START,
-    PROCEDURE_STOP = STOP
+    procedure_start = START,
+    procedure_stop = STOP
   ) %>%
-  select(PROCEDURE_START, PROCEDURE_STOP, PATIENT_ID, ENCOUNTER_ID, PROCEDURE_CODE, PROCEDURE_DESCRIPTION) # %>% View()
+  select(procedure_start, procedure_stop, patient_id, encounter_id, procedure_code, PROCEDURE_DESCRIPTION) %>% 
+  clean_names()# %>% View()
 
 
-# 5. Create a new transformed organizations dataset with standardised column names
+# Create a new transformed organizations dataset with standardised column names
 organizations_transformed <- organizations %>%
   rename(
-    HOSPITAL_ID = Id,
-    HOSPITAL_NAME = NAME
+    hospital_id = Id,
+    hospital_name = NAME
   ) %>%
-  select(HOSPITAL_ID, HOSPITAL_NAME) # %>% View()
+  select(hospital_id, hospital_name) %>% 
+  clean_names() # %>% View()
 
-# 6. Create a new transformed encounters dataset with relevant columns
+# Create a new transformed encounters dataset with relevant columns
 encounters_transformed <- encounters %>%
   rename(
-    ENCOUNTER_ID = Id,
-    ENCOUNTER_START = START,
-    ENCOUNTER_STOP = STOP,
-    PATIENT_ID = PATIENT,
-    ORGANIZATION_ID = ORGANIZATION,
-    ENCOUNTER_CODE = CODE,
-    ENCOUNTER_DESCRIPTION = DESCRIPTION
+    encounter_id = Id,
+    encounter_start = START,
+    encounter_stop = STOP,
+    patient_id = PATIENT,
+    hospital_id = ORGANIZATION,
+    encounter_code = CODE,
+    encounter_description = DESCRIPTION
   ) %>%
-  select(ENCOUNTER_ID, ENCOUNTER_START, ENCOUNTER_STOP, PATIENT_ID, ORGANIZATION_ID, ENCOUNTER_CODE, ENCOUNTER_DESCRIPTION) # %>% View()
+  select(encounter_id, encounter_start, encounter_stop, patient_id, hospital_id, encounter_code, encounter_description) %>% 
+  clean_names()# %>% View()
 
-# Joining the tables.
+## Joining the datasets into one 
+combined_data <- patients_transformed %>% 
+  left_join(encounters_transformed, by = "patient_id") %>% 
+  left_join(conditions_transformed, by = c("patient_id", "encounter_id")) %>%
+  left_join(medications_transformed, by = c("patient_id", "encounter_id"), relationship = "many-to-many") %>%
+  left_join(procedures_transformed, by = c("patient_id", "encounter_id"), relationship = "many-to-many") %>%
+  left_join(organizations_transformed, by = "hospital_id")
 
+View(combined_data)
 
 ## 2.	Inspect the data for missing values, inconsistencies, and data types 
 
-# Count missing values in each required column
+# Confirm the number of rows and cols
+dim(combined_data)
 
-# patients %>%
-#   summarise(across(everything(), ~ sum(is.na(.)))) %>%
-#   pivot_longer(cols = everything(), names_to = "Column_name", values_to = "Missing_Values") %>%
-#   filter(Missing_Values > 0)
+# Confirm col names as expected
+colnames(combined_data)
+
+# Confirm if missing data is as expected
+combined_data %>%
+  # Apply the missing value count function (sum(is.na(.))) to all columns
+  summarise(across(everything(), ~ sum(is.na(.)))) %>% 
+  # Pivot the data to have a narrow readable format
+  pivot_longer(cols = everything(), names_to = "Column", values_to = "Missing_Count") %>%
+  # Calculate the percentage of missing values using Missing_Count and nrow(combined_data)
+  mutate(Missing_Percentage = round(Missing_Count / nrow(combined_data) * 100, 2)) %>%
+  # Sort in descending order by the number of missing values
+  arrange(desc(Missing_Count)) %>% View()
+  
+# Check encounters are tied to one patient
+encounter_check <- combined_data %>%
+  group_by(encounter_id) %>%
+  summarise(unique_patients = n_distinct(patient_id), .groups = "drop") %>%
+  filter(unique_patients > 1) %>% View()
+
+# Check unique columns are as expected
+combined_data %>%
+  summarise( # count number of distinct values for key columns
+    distinct_patients = n_distinct(patient_id),
+    distinct_encounters = n_distinct(encounter_id),
+    distinct_procedures = n_distinct(procedure_code),
+    distinct_medications = n_distinct(medication_code),
+    distinct_diagnoses = n_distinct(diagnosis_code),
+    total_rows = n()
+  )
+
+# Confirm no duplicates are present
+combined_data %>%
+  summarise(duplicate_rows = n() - n_distinct(.)) %>% View()
+
+# Check that each patient is linked to an encounter
+combined_data %>%
+  group_by(patient_id) %>% 
+  # counts number of encounters for each patient
+  summarise(total_encounters = n_distinct(encounter_id)) %>%
+  arrange(desc(total_encounters)) %>% View()
+
+# Check what each encounter is linked to
+combined_data %>%
+  group_by(encounter_id) %>%
+  summarise( # counts every non empty value for each column
+    conditions_count = sum(!is.na(diagnosis_code)),
+    procedures_count = sum(!is.na(procedure_code)),
+    medications_count = sum(!is.na(medication_code))
+  ) %>% View()
+
+# Export to CSV to inspect data further
+write.csv(combined_data, "combined_data.csv", row.names = FALSE)
 
 
