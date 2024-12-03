@@ -25,10 +25,17 @@ patients_transformed <- patients %>%
   rename(
     patient_id = Id
   ) %>% 
-  # Create `age` by calculating the difference between today’s date and the BIRTHDATE
-  # The result is the difference in days that gets divided by 365 to get age in years
-  mutate(AGE = as.integer((Sys.Date() - as.Date(BIRTHDATE)) / 365)) %>%
-  select(patient_id, BIRTHDATE, AGE, GENDER, CITY, ZIP, INCOME) %>% 
+  mutate(
+    # Convert date columns to Date format
+    BIRTHDATE = as.Date(BIRTHDATE, format = "%d/%m/%Y"),
+    # Create `age` by calculating the difference between today’s date and the BIRTHDATE
+    # The result is the difference in days that gets divided by 365 to get age in years
+    age = as.numeric(as.integer((Sys.Date() - as.Date(BIRTHDATE)) / 365)),
+    INCOME = as.numeric(INCOME),
+    # Remove 00000 values in zip code as they are likely a placeholder for missing data
+    # Converting to empty allows more accurate analysis
+    ZIP = na_if(ZIP, "00000")) %>%
+  select(patient_id, BIRTHDATE, age, GENDER, CITY, ZIP, INCOME) %>% 
   # clean_names() used to standardise column names for all datasets
   clean_names() # %>% View()
   
@@ -44,6 +51,13 @@ conditions_transformed <- conditions %>%
     diagnosis_start = START,
     diagnosis_stop = STOP
   ) %>%
+  mutate(
+    # Convert date columns to Date format
+    diagnosis_start = as.Date(diagnosis_start, format = "%d/%m/%Y"),
+    diagnosis_stop = as.Date(diagnosis_stop, format = "%d/%m/%Y"),
+    # Convert code columns to character due to long code values being displayed in other formats
+    diagnosis_code = as.character(diagnosis_code)
+  ) %>% 
   # Select only the relevant columns with standardised column names
   select(diagnosis_start, diagnosis_stop, patient_id, encounter_id, diagnosis_code, diagnosis_description) %>%
   clean_names()# %>% View()
@@ -59,6 +73,13 @@ medications_transformed <- medications %>%
     medication_start = START,
     medication_stop = STOP
   ) %>%
+  mutate(
+    # Convert datetime columns to POSIXct format
+    medication_start = as.POSIXct(medication_start, format = "%d/%m/%Y %H:%M"),
+    medication_stop = as.POSIXct(medication_stop, format = "%d/%m/%Y %H:%M"),
+    # Convert code columns to character due to long code values being displayed in other formats
+    medication_code = as.character(medication_code)
+  ) %>% 
   select(medication_start, medication_stop, patient_id, encounter_id, medication_code, medication_name) %>%
   clean_names() # %>% View()
 
@@ -72,6 +93,13 @@ procedures_transformed <- procedures %>%
     procedure_start = START,
     procedure_stop = STOP
   ) %>%
+  mutate(
+    # Convert datetime columns to POSIXct format
+    procedure_start = as.POSIXct(procedure_start, format = "%d/%m/%Y %H:%M"),
+    procedure_stop = as.POSIXct(procedure_stop, format = "%d/%m/%Y %H:%M"),
+    # Convert all code columns to character due to long code values being displayed in other formats
+    procedure_code = as.character(procedure_code)
+  ) %>% 
   select(procedure_start, procedure_stop, patient_id, encounter_id, procedure_code, PROCEDURE_DESCRIPTION) %>% 
   clean_names()# %>% View()
 
@@ -96,10 +124,15 @@ encounters_transformed <- encounters %>%
     encounter_code = CODE,
     encounter_description = DESCRIPTION
   ) %>%
+  mutate(
+    # Convert datetime columns to POSIXct format
+    encounter_start = as.POSIXct(encounter_start, format = "%d/%m/%Y %H:%M"),
+    encounter_stop = as.POSIXct(encounter_stop, format = "%d/%m/%Y %H:%M")
+  ) %>% 
   select(encounter_id, encounter_start, encounter_stop, patient_id, hospital_id, encounter_code, encounter_description) %>% 
   clean_names()# %>% View()
 
-## Joining the datasets into one 
+## Merge datasets
 combined_data <- patients_transformed %>% 
   left_join(encounters_transformed, by = "patient_id") %>% 
   left_join(conditions_transformed, by = c("patient_id", "encounter_id")) %>%
@@ -109,7 +142,7 @@ combined_data <- patients_transformed %>%
 
 View(combined_data)
 
-## 2.	Inspect the data for missing values, inconsistencies, and data types 
+## 2.	Inspect the data for missing values, inconsistencies, and data types - Data quality checks
 
 # Confirm the number of rows and cols
 dim(combined_data)
@@ -128,15 +161,17 @@ combined_data %>%
   # Sort in descending order by the number of missing values
   arrange(desc(Missing_Count)) %>% View()
   
-# Check encounters are tied to one patient
-encounter_check <- combined_data %>%
+# Check encounters are tied to one patient - Returns no data if true
+combined_data %>%
   group_by(encounter_id) %>%
+  # Count the number of unique patients for each encounter_id
+  # .groups = "drop" removes grouping after summarisation
   summarise(unique_patients = n_distinct(patient_id), .groups = "drop") %>%
   filter(unique_patients > 1) %>% View()
 
 # Check unique columns are as expected
-combined_data %>%
-  summarise( # count number of distinct values for key columns
+combined_data %>% 
+  summarise( # Count number of distinct values for key columns
     distinct_patients = n_distinct(patient_id),
     distinct_encounters = n_distinct(encounter_id),
     distinct_procedures = n_distinct(procedure_code),
@@ -156,7 +191,7 @@ combined_data %>%
   summarise(total_encounters = n_distinct(encounter_id)) %>%
   arrange(desc(total_encounters)) %>% View()
 
-# Check what each encounter is linked to
+# Check what each encounter is linked to 
 combined_data %>%
   group_by(encounter_id) %>%
   summarise( # counts every non empty value for each column
@@ -167,25 +202,6 @@ combined_data %>%
 
 # Export to CSV to inspect data further
 write.csv(combined_data, "combined_data.csv", row.names = FALSE)
-
-# Date transformations for consistency
-combined_data <- combined_data %>%
-  mutate(
-    # Convert date columns to Date format
-    birthdate = as.Date(birthdate, format = "%d/%m/%Y"),
-    diagnosis_start = as.Date(diagnosis_start, format = "%d/%m/%Y"),
-    diagnosis_stop = as.Date(diagnosis_stop, format = "%d/%m/%Y"),
-    procedure_start = as.Date(procedure_start, format = "%d/%m/%Y"),
-    procedure_stop = as.Date(procedure_stop, format = "%d/%m/%Y"),
-    
-    # Convert datetime columns to POSIXct format
-    encounter_start = as.POSIXct(encounter_start, format = "%d/%m/%Y %H:%M"),
-    encounter_stop = as.POSIXct(encounter_stop, format = "%d/%m/%Y %H:%M"),
-    medication_start = as.POSIXct(medication_start, format = "%d/%m/%Y %H:%M"),
-    medication_stop = as.POSIXct(medication_stop, format = "%d/%m/%Y %H:%M"),
-    procedure_start = as.POSIXct(procedure_start, format = "%d/%m/%Y %H:%M"),
-    procedure_stop = as.POSIXct(procedure_stop, format = "%d/%m/%Y %H:%M")
-  )
 
 
 
