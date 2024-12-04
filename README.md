@@ -113,4 +113,4 @@ This project's objective is to clean and analyse synthetic healthcare data from 
      - Load and clean datasets.
      - Standardise column names and data types/formats.
      - Combine the datasets into a joined dataset for analysis.
-   - **Status**: Completed cleaning and initial transformation.
+   - **Status**: Completed cleaning and transformations.
