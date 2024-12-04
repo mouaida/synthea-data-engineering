@@ -7,12 +7,22 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 ## Tools Used
 - **Programming Language**: R
 - **IDE**: RStudio
-- **Libraries**: `readr`, `dplyr`, `tidyr`, `tidyverse`, `janitor`
+- **Libraries**: `readr`, `dplyr`, `tidyr`, `tidyverse`, `janitor`, `ggplot2`
 
-----
+---
 
-## Progress in Current Branch: `data-cleaning`
-### Overview
+## Repository Structure
+- `data/`: Contains the raw CSV files.
+- `code/`: Contains R scripts for data processing and analysis.
+    - `data_cleaning.R`: Script for loading, cleaning, and transforming the data.
+    - `data_analysis.R`: Script for exploratory analysis and aggregating data insights.
+- `README.md`: This file, provides detailed explanations of each step taken in this project.
+
+---
+
+## Progress in Branches
+
+### Branch: `data-cleaning`
 - Initialised R environment with required libraries.
 - Loaded six datasets from CSV files into RStudio.
 - Standardised each dataset to ensure consistent column naming and retained only relevant fields for analysis.
@@ -21,13 +31,21 @@ This project's objective is to clean and analyse synthetic healthcare data from 
   - Replaced invalid `ZIP` values (`00000`) with `NA`.
   - Converted long numeric codes (e.g., `procedure_code`, `diagnosis_code`) to character format.
 - Combined datasets into a single `combined_data` dataset for further analysis.
-- Conducted initial data quality checks, including:
+- Conducted data quality checks, including:
   - Validating relationships between patients, encounters, and other entities.
   - Inspecting for missing values, inconsistencies, and duplicates.
 
+### Branch: `data-analysis`
+- Initialised R environment with required libraries.
+- Loaded the cleaned `combined_data.csv` generated in the `data-cleaning` branch.
+
 ---
 
-### Transformed Datasets
+## Detailed steps taken for each Branch
+
+### Branch: `data-cleaning`
+
+#### Transformed Datasets
 1. **patients_transformed**:
    - Retained: `patient_id`, `birthdate`, `age`, `gender`, `city`, `zip`, `income`.
    - Transformed:
@@ -62,7 +80,7 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 
 ---
 
-### Combined Dataset: `combined_data`
+#### Combined Dataset: `combined_data`
 - **Joined Tables**:
    - Used `patient_id` to join `patients_transformed` with `encounters_transformed`.
    - Then used `encounter_id` to join `encounters_transformed` with:
@@ -84,7 +102,7 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 
 ---
 
-### Data Quality Checks
+#### Data Quality Checks
 1. **Basic Structure Validation**:
    - Confirmed the dataset dimensions to ensure the number of rows and columns match expectations.
    - Validated column names to confirm they are correctly standardised.
@@ -105,12 +123,17 @@ This project's objective is to clean and analyse synthetic healthcare data from 
    - Aggregated the number of related records (`diagnosis_code`, `procedure_code`, `medication_code`) for each `encounter_id`.
    - Counted non-missing values for these columns to get an overview of their distribution across encounters.
 
+
+### Branch: `data-analysis`
+- Created the `data_analysis.R` script to behin exploratory data analysis.
+- Loaded the `combined_data.csv` from the `data-cleaning` branch.
+
 ---
 
 ## Code Subdirectory
 - **`code/data_cleaning.R`**:
- - A script to:
-     - Load and clean datasets.
-     - Standardise column names and data types/formats.
-     - Combine the datasets into a joined dataset for analysis.
-   - **Status**: Completed cleaning and transformations.
+  - **Purpose**: Load and clean datasets, standardise column names and data types, and combine datasets.
+  - **Status**: Completed cleaning and transformations.
+- **`code/data_analysis.R`**:
+  - **Purpose**: Load the cleaned dataset and perform exploratory data analysis.
+  - **Status**: In progress.
