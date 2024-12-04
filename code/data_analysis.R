@@ -174,3 +174,128 @@ ggplot(combined_data, aes(x = "", y = log10(length_of_stay + 1))) +
     x = ""
   ) +
   theme_minimal()
+
+# 1. Diagnoses by Age Group and Gender
+
+# Filter top 10 most common diagnoses, excluding empty fields
+top_diagnoses <- combined_data %>%
+  filter(!is.na(diagnosis_description)) %>%  # Exclude empty diagnosis descriptions
+  group_by(diagnosis_description) %>%
+  summarise(total_count = n(), .groups = "drop") %>%
+  arrange(desc(total_count)) %>%
+  top_n(10)
+
+# Filter dataset for only top diagnoses and exclude empty fields
+filtered_data <- combined_data %>%
+  filter(
+    diagnosis_description %in% top_diagnoses$diagnosis_description,
+    !is.na(gender),  # Exclude rows with missing gender
+    !is.na(age_group)  # Exclude rows with missing age group
+  ) 
+
+# a) Diagnoses Distribution by Gender
+ggplot(filtered_data, aes(x = diagnosis_description, fill = gender)) +
+  geom_bar(position = "dodge") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Top Diagnoses Distribution by Gender",
+    x = "Diagnosis",
+    y = "Count",
+    fill = "Gender"
+  )
+
+# b) Diagnoses Distribution by Age Group
+ggplot(filtered_data, aes(x = diagnosis_description, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Top Diagnoses Distribution by Age Group",
+    x = "Diagnosis",
+    y = "Count",
+    fill = "Age Group"
+  )
+
+# Temporal trends in hospital visits
+
+# Extract year from encounter_start and summarise visits by year
+visits_over_time <- combined_data %>%
+  mutate(encounter_year = as.numeric(format(as.Date(encounter_start), "%Y"))) %>%
+  group_by(encounter_year) %>%
+  summarise(total_visits = n(), .groups = "drop") %>%
+  filter(!is.na(encounter_year))  # Exclude rows with missing years
+
+# Line chart for hospital visits over time
+# Observation: Minimal before 2000; steady increase post 2020; peak at 2020; 
+ggplot(visits_over_time, aes(x = encounter_year, y = total_visits)) +
+  geom_line(size = 1.2, color = "blue") +
+  geom_point(size = 3, color = "red") +
+  theme_minimal() +
+  labs(
+    title = "Temporal Trends in Hospital Visits",
+    x = "Year",
+    y = "Total Visits"
+  )
+
+# Extract year from medication_start and summarise medications by year
+medications_over_time <- combined_data %>%
+  mutate(medication_year = as.numeric(format(as.Date(medication_start), "%Y"))) %>%
+  group_by(medication_year) %>%
+  summarise(total_medications = n(), .groups = "drop") %>%
+  filter(!is.na(medication_year))  # Exclude rows with missing years
+
+# Line chart for medication use over time
+# Observation: Minimal before 2000; steady increase post 2020; peak at 2020; 
+ggplot(medications_over_time, aes(x = medication_year, y = total_medications)) +
+  geom_line(size = 1.2, color = "blue") +
+  geom_point(size = 3, color = "red") +
+  theme_minimal() +
+  labs(
+    title = "Temporal Trends in Medication Use",
+    x = "Year",
+    y = "Total Medications"
+  )
+
+# Identifying the most common diagnoses for patients
+
+# Aggregate diagnoses counts, excluding missing fields
+common_diagnoses <- combined_data %>%
+  filter(!is.na(diagnosis_description)) %>% # Exclude missing diagnoses
+  group_by(diagnosis_description) %>%
+  summarise(total_diagnoses = n(), .groups = "drop") %>%
+  arrange(desc(total_diagnoses)) %>%
+  slice_head(n = 10) # Top 10 diagnoses
+
+# Bar chart for top diagnoses
+ggplot(common_diagnoses, aes(x = reorder(diagnosis_description, total_diagnoses), y = total_diagnoses)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() + # Flip axes for better readability
+  labs(
+    title = "Top 10 Most Common Diagnoses",
+    x = "Diagnosis Description",
+    y = "Total Diagnoses"
+  ) +
+  theme_minimal()
+
+# Identifying the most common procedures for patients
+
+# Aggregate procedures counts, excluding missing fields
+common_procedures <- combined_data %>%
+  filter(!is.na(procedure_description)) %>% # Exclude missing procedures
+  group_by(procedure_description) %>%
+  summarise(total_procedures = n(), .groups = "drop") %>%
+  arrange(desc(total_procedures)) %>%
+  slice_head(n = 10) # Top 10 procedures
+
+# Bar chart for top procedures
+ggplot(common_procedures, aes(x = reorder(procedure_description, total_procedures), y = total_procedures)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  coord_flip() + # Flip axes for better readability
+  labs(
+    title = "Top 10 Most Common Procedures",
+    x = "Procedure Description",
+    y = "Total Procedures"
+  ) +
+  theme_minimal()
+

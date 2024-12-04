@@ -139,75 +139,101 @@ This project's objective is to clean and analyse synthetic healthcare data from 
    - Aggregated the number of related records (`diagnosis_code`, `procedure_code`, `medication_code`) for each `encounter_id`.
    - Counted non-missing values for these columns to get an overview of their distribution across encounters.
 
+---
 
-### Branch: `data-analysis`
-#### Overview
-- Created the `data_analysis.R` script to behin exploratory data analysis.
-- Loaded the `combined_data.csv` from the `data-cleaning` branch.
-- Created new variables and aggregated data
+## Branch: `data-analysis`
 
-#### New Variables
+### Overview
+- Developed `data_analysis.R` to perform exploratory data analysis (EDA) and generate insights from the cleaned `combined_data.csv` dataset.
+- Focused on understanding patient demographics, temporal trends, and diagnosis/procedure frequencies.
+- Created new variables, aggregated data, and visualised insights to identify patterns.
+
+---
+
+### New Variables
 1. **`age_group`**:
-   - Created broad age groups to ensure sufficient records for analysis.
-   - Groups: `0-17`, `18-34`, `35-64`, and `65+`.
+   - Categorised patients into broad age groups (`0-17`, `18-34`, `35-64`, and `65+`) to ensure sufficient records for meaningful analysis.
 
 2. **`age_group_code`**:
-   - Assigned numeric codes to age groups for easier sorting and analysis.
+   - Assigned numeric codes to age groups for easier sorting and statistical operations.
 
 3. **`length_of_stay`**:
-   - Calculated the number of days between `encounter_start` and `encounter_stop` for each encounter.
+   - Calculated the number of days between `encounter_start` and `encounter_stop` for each hospital visit.
 
-#### Aggregated Data
+---
+
+### Aggregated Data
 1. **Visits Per Patient**:
-   - Calculated the total number of unique visits for each patient.
+   - Summarised the total number of unique hospital visits for each patient.
 
 2. **Diagnosis Frequency**:
-   - Counted occurrences of each `diagnosis_code` and its corresponding `diagnosis_description`.
+   - Aggregated the frequency of each `diagnosis_description` and its corresponding `diagnosis_code`.
 
 3. **Medications By Age Group**:
    - Counted the number of medications prescribed within each age group.
 
 4. **Procedures Per Hospital**:
-   - Aggregated the total number of procedures performed at each hospital.
-
-### Key EDA Steps
-
-1. **Patient Distribution**:
-   - Grouped patients by `age_group`, `gender`, and `diagnosis_description` to understand demographic characteristics.
-   - Created histograms and summarised total counts per category.
-
-2. **Trends in Procedures**:
-   - Analysed trends in medical procedures over time using yearly and monthly aggregates.
-   - Focused on recent trends (2000 and later) to identify current patterns in healthcare.
-
-3. **Relationship Analysis**:
-   - Explored the relationship between patient demographics and diagnosis/medication types:
-     - Aggregated and visualised diagnosis counts by `age_group`.
-     - Aggregated and visualised medication counts by `gender`.
-
-4. **Statistical Summary**:
-   - Summarised key numerical columns:
-     - `age`, `length_of_stay`, and `total_visits`.
-   - Rounded results to improve readability.
-
-5. **Outlier Detection**:
-   - Used boxplots to identify outliers for numerical variables.
-   - Applied log transformations to better visualise highly skewed data.
+   - Calculated the total number of procedures performed per hospital.
 
 ---
 
-### Example Outputs
+### EDA and Statistical Analysis
 
-#### Tables:
-- **Patient Distribution**: Total patients by `age_group` and `gender`.
-- **Diagnosis Frequencies**: Top diagnoses and their frequency.
-- **Medication Frequencies**: Top prescribed medications and their counts.
-- **Trends in Procedures**: Total procedures performed per year.
+#### Key Steps
+1. **Demographic Distributions**:
+   - Grouped patients by `age_group`, `gender`, and `diagnosis_description`.
+   - Visualised the top 10 diagnoses distributed by age groups and gender.
 
-#### Visualisations:
-- **Trends in Medical Procedures Over Time**: Line and scatter plots showing yearly trends.
-- **Diagnosis and Medication Distribution**: Bar charts exploring demographics and treatment patterns.
-- **Boxplots for Outliers**: Visual representation of skewness and anomalies in key variables.
+2. **Temporal Analysis**:
+   - Examined hospital visits and medication use over time.
+   - Created yearly and monthly summaries to capture trends post-2000.
+
+3. **Statistical Summaries**:
+   - Calculated the mean, median, and standard deviation for:
+     - Patient `age`
+     - `Length of Stay`
+     - `Total Visits`
+   - Identified and visualised outliers using boxplots, applying log transformations for skewed data.
+
+4. **Most Common Diagnoses and Procedures**:
+   - Bar charts highlighted the top 10 diagnoses and procedures based on their frequency.
+   - Provided demographic breakdowns for better understanding.
+
+---
+
+### Insights Generated
+
+#### 1. Diagnoses by Age Groups and Gender
+- **Key Findings**:
+  - **Age Groups**:
+    - Middle-aged adults (35–64) show the highest frequency of diagnoses like "Stress" and "Social Isolation."
+    - Older adults (65+) exhibit a higher prevalence of "Medication Review Due" and "Gingivitis."
+  - **Gender**:
+    - Males are disproportionately represented in employment-related diagnoses like "Not in Labor Force."
+    - Females show higher frequencies for social conditions like "Victim of Intimate Partner Abuse."
+
+#### 2. Temporal Trends
+- **Hospital Visits**:
+  - Significant increase post-2000, peaking around 2020, reflecting potential synthetic data trends.
+- **Medication Use**:
+  - Temporal trends closely mirror hospital visits, suggesting linked treatment patterns.
+
+#### 3. Most Common Diagnoses and Procedures
+- **Diagnoses**:
+  - The most frequent diagnoses include "Medication Review Due," "Stress," and "Gingivitis."
+  - Many diagnoses are related to lifestyle and mental health conditions.
+- **Procedures**:
+  - "Depression Screening" and "Substance Use Assessment" dominate the dataset, indicating a focus on mental health.
+
+---
+
+### Visualisation Summary
+1. **Demographic Trends**:
+   - Bar charts for diagnoses by age group and gender reveal demographic-specific health patterns.
+2. **Temporal Trends**:
+   - Line charts highlight the steady growth in hospital visits and medication use over time.
+3. **Diagnosis and Procedure Insights**:
+   - Horizontal bar charts visualise the top 10 diagnoses and procedures, providing actionable insights.
 
 ---
 
