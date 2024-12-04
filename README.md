@@ -36,8 +36,24 @@ This project's objective is to clean and analyse synthetic healthcare data from 
   - Inspecting for missing values, inconsistencies, and duplicates.
 
 ### Branch: `data-analysis`
-- Initialised R environment with required libraries.
-- Loaded the cleaned `combined_data.csv` generated in the `data-cleaning` branch.
+- **Exploratory Data Analysis (EDA)**:
+  - Conducted an initial exploration of the dataset to understand its characteristics:
+    - Analysed the distribution of patients by `age_group`, `gender`, and `diagnosis_description`.
+    - Identified the most frequent `diagnoses` and `medications`.
+    - Investigated trends in medical procedures over time.
+    - Explored relationships between patient demographics (e.g., `age_group`, `gender`) and diagnosis/medication types.
+  - Generated tables and graphs to summarise key insights:
+    - Patient distribution by age groups, gender, and diagnosis.
+    - Diagnosis and medication frequencies by demographics.
+    - Trends in medical procedures over recent years.
+
+- **Statistical Analysis**:
+  - Performed basic statistical summaries:
+    - Calculated mean, median, and standard deviation for numerical columns such as `age`, `length_of_stay`, and `total_visits`.
+    - Summarised patient visits, diagnoses, and medications for insights into common patterns.
+  - Identified outliers and potential skewed distributions:
+    - Created boxplots for variables such as `age`, `length_of_stay`, and `total_visits` to visually detect anomalies.
+    - Applied log transformations where necessary to better represent skewed data (e.g., `length_of_stay`, `total_visits`).
 
 ---
 
@@ -154,6 +170,44 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 4. **Procedures Per Hospital**:
    - Aggregated the total number of procedures performed at each hospital.
 
+### Key EDA Steps
+
+1. **Patient Distribution**:
+   - Grouped patients by `age_group`, `gender`, and `diagnosis_description` to understand demographic characteristics.
+   - Created histograms and summarised total counts per category.
+
+2. **Trends in Procedures**:
+   - Analysed trends in medical procedures over time using yearly and monthly aggregates.
+   - Focused on recent trends (2000 and later) to identify current patterns in healthcare.
+
+3. **Relationship Analysis**:
+   - Explored the relationship between patient demographics and diagnosis/medication types:
+     - Aggregated and visualised diagnosis counts by `age_group`.
+     - Aggregated and visualised medication counts by `gender`.
+
+4. **Statistical Summary**:
+   - Summarised key numerical columns:
+     - `age`, `length_of_stay`, and `total_visits`.
+   - Rounded results to improve readability.
+
+5. **Outlier Detection**:
+   - Used boxplots to identify outliers for numerical variables.
+   - Applied log transformations to better visualise highly skewed data.
+
+---
+
+### Example Outputs
+
+#### Tables:
+- **Patient Distribution**: Total patients by `age_group` and `gender`.
+- **Diagnosis Frequencies**: Top diagnoses and their frequency.
+- **Medication Frequencies**: Top prescribed medications and their counts.
+- **Trends in Procedures**: Total procedures performed per year.
+
+#### Visualisations:
+- **Trends in Medical Procedures Over Time**: Line and scatter plots showing yearly trends.
+- **Diagnosis and Medication Distribution**: Bar charts exploring demographics and treatment patterns.
+- **Boxplots for Outliers**: Visual representation of skewness and anomalies in key variables.
 
 ---
 
