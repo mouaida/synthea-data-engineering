@@ -125,15 +125,49 @@ This project's objective is to clean and analyse synthetic healthcare data from 
 
 
 ### Branch: `data-analysis`
+#### Overview
 - Created the `data_analysis.R` script to behin exploratory data analysis.
 - Loaded the `combined_data.csv` from the `data-cleaning` branch.
+- Created new variables and aggregated data
+
+#### New Variables
+1. **`age_group`**:
+   - Created broad age groups to ensure sufficient records for analysis.
+   - Groups: `0-17`, `18-34`, `35-64`, and `65+`.
+
+2. **`age_group_code`**:
+   - Assigned numeric codes to age groups for easier sorting and analysis.
+
+3. **`length_of_stay`**:
+   - Calculated the number of days between `encounter_start` and `encounter_stop` for each encounter.
+
+#### Aggregated Data
+1. **Visits Per Patient**:
+   - Calculated the total number of unique visits for each patient.
+
+2. **Diagnosis Frequency**:
+   - Counted occurrences of each `diagnosis_code` and its corresponding `diagnosis_description`.
+
+3. **Medications By Age Group**:
+   - Counted the number of medications prescribed within each age group.
+
+4. **Procedures Per Hospital**:
+   - Aggregated the total number of procedures performed at each hospital.
+
 
 ---
 
-## Code Subdirectory
+### Code Subdirectory
 - **`code/data_cleaning.R`**:
-  - **Purpose**: Load and clean datasets, standardise column names and data types, and combine datasets.
-  - **Status**: Completed cleaning and transformations.
+   - A script to:
+     - Load and clean datasets.
+     - Standardise column names and data types/formats.
+     - Combine the datasets into a joined dataset for analysis.
+   - **Status**: Completed cleaning and transformations.
+
 - **`code/data_analysis.R`**:
-  - **Purpose**: Load the cleaned dataset and perform exploratory data analysis.
-  - **Status**: In progress.
+   - A script to:
+     - Load the cleaned dataset.
+     - Create new variables (`age_group`, `length_of_stay`).
+     - Aggregate data for exploratory insights (e.g., visits per patient, diagnosis frequency).
+   - **Status**: Initial analysis complete.
